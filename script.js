@@ -1,4 +1,59 @@
-// script.js - Améliorations pour un portfolio moderne
+// ============ CORRECTION DU SCROLL ============
+
+// Ajoutez ceci dans le DOMContentLoaded
+document.addEventListener('DOMContentLoaded', function() {
+    
+    // ... (votre code existant) ...
+    
+    // ============ FIX POUR LE SCROLL DES SECTIONS ============
+    function fixSectionOverlap() {
+        const sections = document.querySelectorAll('section');
+        const navbarHeight = document.querySelector('.navbar').offsetHeight;
+        
+        sections.forEach(section => {
+            // Ajoute un padding-top pour éviter le chevauchement
+            if (section.id !== 'accueil') {
+                section.style.scrollMarginTop = `${navbarHeight + 20}px`;
+            }
+        });
+        
+        // Ajuste le padding de la hero section
+        const hero = document.querySelector('.hero');
+        if (hero) {
+            hero.style.paddingTop = `${navbarHeight + 40}px`;
+        }
+    }
+    
+    // Appeler la fonction
+    fixSectionOverlap();
+    
+    // Recalculer lors du redimensionnement
+    window.addEventListener('resize', fixSectionOverlap);
+    
+    // ============ SCROLL SMOOTH AVEC OFFSET ============
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const targetId = this.getAttribute('href');
+            if (targetId === '#') return;
+            
+            const targetElement = document.querySelector(targetId);
+            if (targetElement) {
+                const navbarHeight = document.querySelector('.navbar').offsetHeight;
+                const targetPosition = targetElement.offsetTop - navbarHeight - 20;
+                
+                window.scrollTo({
+                    top: targetPosition,
+                    behavior: 'smooth'
+                });
+            }
+        });
+    });
+    
+    // ... (reste de votre code) ...
+});
+// ============ SCRIPT PRINCIPAL DU PORTFOLIO D'AIMÉ RUKUNDO ============   
 
 document.addEventListener('DOMContentLoaded', function() {
     
@@ -576,7 +631,7 @@ function shareOnLinkedIn() {
 }
 
 function shareOnTwitter() {
-    const text = encodeURIComponent("Découvrez le portfolio d'Aimé RUKUNDO - Développeur Full Stack");
+    const text = encodeURIComponent("Découvrez d'Aimé RUKUNDO - Développeur Full Stack");
     const url = encodeURIComponent(window.location.href);
     window.open(`https://twitter.com/intent/tweet?text=${text}&url=${url}`, '_blank');
 }
@@ -587,4 +642,120 @@ function downloadCV() {
     console.log('CV téléchargé');
     // window.dataLayer = window.dataLayer || [];
     // window.dataLayer.push({'event': 'cv_download'});
+}
+
+// ============ FORMULAIRE DE CONTACT FONCTIONNEL ============
+
+// Configuration Formspree (SERVICE GRATUIT)
+// 1. Allez sur https://formspree.io/
+// 2. Créez un compte gratuit
+// 3. Récupérez votre email Formspree
+
+const FORMSPREE_EMAIL = 'rukundaime@gmail.com'; // Remplacez par votre email Formspree
+const FORMSPREE_ENDPOINT = `https://formspree.io/f/xrbnrkyl${FORMSPREE_EMAIL}`;
+
+if (contactForm) {
+    contactForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        // Récupérer les valeurs
+        const formData = new FormData(this);
+        const data = {
+            name: formData.get('name'),
+            email: formData.get('email'),
+            subject: formData.get('subject'),
+            message: formData.get('message'),
+            _replyto: formData.get('email'),
+            _subject: `Nouveau message portfolio: ${formData.get('subject')}`
+        };
+        
+        // Validation
+        if (!data.name || !data.email || !data.subject || !data.message) {
+            showNotification('Veuillez remplir tous les champs', 'error');
+            return;
+        }
+        
+        if (!isValidEmail(data.email)) {
+            showNotification('Veuillez entrer une adresse email valide', 'error');
+            return;
+        }
+        
+        // Désactiver le bouton pendant l'envoi
+        const submitBtn = contactForm.querySelector('button[type="submit"]');
+        const originalText = submitBtn.textContent;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Envoi en cours...';
+        submitBtn.disabled = true;
+        
+        try {
+            // Envoi réel avec Formspree
+            const response = await fetch(FORMSPREE_ENDPOINT, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+            
+            if (response.ok) {
+                // Succès
+                showNotification(`Merci ${data.name}! Votre message a été envoyé avec succès. Je vous répondrai dans les plus brefs délais.`, 'success');
+                
+                // Animation de succès
+                contactForm.classList.add('success');
+                setTimeout(() => contactForm.classList.remove('success'), 3000);
+                
+                // Réinitialiser le formulaire
+                contactForm.reset();
+                
+                // Animation de confirmation
+                const confirmation = document.createElement('div');
+                confirmation.className = 'form-confirmation';
+                confirmation.innerHTML = `
+                    <i class="fas fa-check-circle"></i>
+                    <h3>Message envoyé !</h3>
+                    <p>Je vous répondrai à ${data.email} très rapidement.</p>
+                `;
+                
+                contactForm.parentNode.insertBefore(confirmation, contactForm);
+                setTimeout(() => confirmation.remove(), 5000);
+                
+            } else {
+                throw new Error('Erreur lors de l\'envoi');
+            }
+            
+        } catch (error) {
+            console.error('Erreur:', error);
+            showNotification('Une erreur est survenue. Veuillez réessayer ou me contacter directement à rukundaime@gmail.com', 'error');
+        } finally {
+            submitBtn.textContent = originalText;
+            submitBtn.disabled = false;
+        }
+    });
+    
+    // Amélioration UX du formulaire
+    const formGroups = contactForm.querySelectorAll('.form-group');
+    formGroups.forEach(group => {
+        const input = group.querySelector('input, textarea');
+        
+        input.addEventListener('focus', function() {
+            group.classList.add('focused');
+        });
+        
+        input.addEventListener('blur', function() {
+            if (!this.value.trim()) {
+                group.classList.remove('focused');
+            }
+        });
+        
+        // Validation en temps réel
+        input.addEventListener('input', function() {
+            if (this.value.trim()) {
+                group.classList.remove('error');
+                group.classList.add('valid');
+            } else {
+                group.classList.remove('valid');
+            }
+        });
+    });
 }
