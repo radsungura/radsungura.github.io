@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <img align="center" src="banner.gif" width="100%" height="400" alt="Web Dev" />
 
 <h1 align="center">Hi 👋, I'm Aimé Rukundo</h1>
@@ -39,3 +40,7 @@
 <p>&nbsp;<img align="center" src="https://github-readme-stats.vercel.app/api?username=radsungura&show_icons=true&locale=en" alt="radsungura" /></p>
 
 <p><img align="center" src="https://github-readme-streak-stats.herokuapp.com/?user=radsungura&" alt="radsungura" /></p>
+=======
+# radsungura.github.io
+Aimé Rukundo Bio
+>>>>>>> 52053210eb7e31707b9fa5396532f2da44129c5d
